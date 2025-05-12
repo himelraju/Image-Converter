@@ -223,6 +223,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
         let convertedImages = [];
+        let downloadQueue = [];
 
         function convertImage() {
             const inputElement = document.getElementById('imageInput');
@@ -304,13 +305,23 @@
             link.href = imageData;
             link.download = `converted_image_${index}.${document.getElementById('outputFormat').value}`;
             link.click();
-        }
+        }        async function downloadAllImages() {
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            downloadAllBtn.disabled = true;
+            const progressWrapper = document.querySelector('.progress-wrapper');
+            progressWrapper.style.display = 'block';
 
-        function downloadAllImages() {
-            const outputFormat = document.getElementById('outputFormat').value;
-            convertedImages.forEach(image => {
-                downloadSingleImage(image.data, image.index);
-            });
+            try {
+                for (let i = 0; i < convertedImages.length; i++) {
+                    const image = convertedImages[i];
+                    downloadSingleImage(image.data, image.index);
+                    // Add a small delay between downloads
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            } finally {
+                downloadAllBtn.disabled = false;
+                progressWrapper.style.display = 'none';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
